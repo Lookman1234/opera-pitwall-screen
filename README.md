@@ -1,6 +1,6 @@
 # OPERA Pit-Wall Screen
 
-**Status:** DRAFT v0.1 (pipeline built and tested on synthetic data; no real-data results yet) | **Maintainer:** Lukman Alabede (Independent Researcher), ORCID [ASK ORCID iD] | **License:** code MIT, results CC BY 4.0
+**Status:** DRAFT v0.1 (pipeline built and tested on synthetic data; no real-data results yet) | **Maintainer:** Lukman Alabede (Independent Researcher), ORCID [0009-0008-7769-7455](https://orcid.org/0009-0008-7769-7455) | **License:** code MIT, results CC BY 4.0
 
 **In plain terms:** NASA now publishes free satellite maps of ground movement across the United States every 6 to 12 days, back to 2016. This project tests whether those free maps can spot open-pit mine walls starting to move before they fail, and shows exactly which walls the satellite cannot see. Anyone can rerun it on any pit.
 

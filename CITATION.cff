@@ -7,7 +7,7 @@ date-released: "[date of first release]"
 authors:
   - family-names: "Alabede"
     given-names: "Lukman"
-    orcid: "https://orcid.org/[ASK ORCID iD]"
+    orcid: "https://orcid.org/0009-0008-7769-7455"
 license: MIT
 repository-code: "https://github.com/[ASK github user]/opera-pitwall-screen"
 doi: "[DOI pending first release]"
