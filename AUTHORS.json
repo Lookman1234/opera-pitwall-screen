@@ -2,13 +2,20 @@
   "_comment": "Author block. Every document, citation file, Zenodo record and manuscript reads from here. Order is author order. Roles use CRediT terms.",
   "authors": [
     {
-      "name": "[ASK name exactly as it should appear]",
-      "family": "[ASK]",
-      "given": "[ASK]",
+      "name": "Lukman Alabede",
+      "family": "Alabede",
+      "given": "Lukman",
       "orcid": "[ASK ORCID iD]",
       "email": "lukmanademola081@gmail.com",
-      "affiliation": "[ASK affiliation]",
-      "roles": ["Conceptualization", "Methodology", "Software", "Validation", "Formal analysis", "Writing - original draft"],
+      "affiliation": "Independent Researcher",
+      "roles": [
+        "Conceptualization",
+        "Methodology",
+        "Software",
+        "Validation",
+        "Formal analysis",
+        "Writing - original draft"
+      ],
       "corresponding": true
     }
   ],

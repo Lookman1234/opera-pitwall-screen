@@ -5,9 +5,9 @@ title: "OPERA Pit-Wall Screen: testing NASA OPERA DISP-S1 InSAR for open-pit wal
 version: "0.1.0"
 date-released: "[date of first release]"
 authors:
-  - family-names: "[ASK]"
-    given-names: "[ASK]"
-    orcid: "https://orcid.org/[ASK]"
+  - family-names: "Alabede"
+    given-names: "Lukman"
+    orcid: "https://orcid.org/[ASK ORCID iD]"
 license: MIT
 repository-code: "https://github.com/[ASK github user]/opera-pitwall-screen"
 doi: "[DOI pending first release]"
