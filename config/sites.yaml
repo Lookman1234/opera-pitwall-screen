@@ -4,8 +4,9 @@
 # Defaults chosen 2026-10-11 (author said "go with recommended defaults"): two US
 # open pits with a dated, publicly documented wall failure inside the OPERA record.
 
-exclude_operators:
-  - "[ASK employer name to exclude]"
+# Exclusions are kept private: config/exclude.local.yaml (not published) and the
+# PITWALL_EXCLUDE secret on GitHub. Public entries may also be listed here.
+exclude_operators: []
 
 sites:
   - id: continental

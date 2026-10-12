@@ -21,16 +21,33 @@ def load_yaml(path):
 def load_config(root, sites_path=None, params_path=None):
     sites = load_yaml(sites_path or os.path.join(root, "config", "sites.yaml"))
     params = load_yaml(params_path or os.path.join(root, "config", "params.yaml"))
-    excluded = [s.lower() for s in (sites.get("exclude_operators") or [])]
+    excluded = [s.lower() for s in _exclusions(root, sites)]
     active = []
     for s in sites["sites"]:
-        op = (s.get("operator") or "").lower()
-        if any(e and e in op for e in excluded):
-            raise SystemExit(f"Site {s['id']} is run by an excluded operator ({s.get('operator')}). "
+        text = " ".join(str(s.get(k) or "") for k in ("operator", "name", "id")).lower()
+        if any(e and e in text for e in excluded):
+            raise SystemExit(f"Site {s['id']} matches an excluded operator or mine. "
                              "This project screens non-employer pits only; remove it from config/sites.yaml.")
         if s.get("enabled", True):
             active.append(s)
     return active, params
+
+
+def _exclusions(root, sites):
+    """Operators (and mine names) the pipeline must refuse.
+
+    Three sources, merged: exclude_operators in sites.yaml (public), the private file
+    config/exclude.local.yaml (git-ignored, never published), and the environment
+    variable PITWALL_EXCLUDE (comma-separated; the GitHub runner fills it from a
+    repository secret). The private routes keep the author's employer out of the
+    public repository while still enforcing the exclusion on every run.
+    """
+    out = [s for s in (sites.get("exclude_operators") or []) if s and not s.startswith("[")]
+    local = os.path.join(root, "config", "exclude.local.yaml")
+    if os.path.exists(local):
+        out += [s for s in (load_yaml(local) or {}).get("exclude", []) if s]
+    out += [s.strip() for s in os.environ.get("PITWALL_EXCLUDE", "").split(",") if s.strip()]
+    return out
 
 
 def sha256(path):

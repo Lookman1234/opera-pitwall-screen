@@ -171,7 +171,7 @@ def build_project(root, params_src):
     lon0, lat0 = geo.utm_to_lonlat(X0 - 1800, Y0 - 1800, EPSG, use_pyproj=False)
     lon1, lat1 = geo.utm_to_lonlat(X0 + 1800, Y0 + 1800, EPSG, use_pyproj=False)
     with open(os.path.join(root, "config", "sites.yaml"), "w") as f:
-        yaml.safe_dump({"exclude_operators": ["Employer Co"], "sites": [{
+        yaml.safe_dump({"exclude_operators": [], "sites": [{
             "id": "synth", "name": "Synthetic test pit (not real)", "operator": "Nobody",
             "bbox": [float(lon0), float(lat0), float(lon1), float(lat1)], "epsg": EPSG,
             "walls": "config/sites/synth_walls.geojson", "stable": "config/sites/synth_stable.geojson",

@@ -5,3 +5,4 @@ __pycache__/
 *.pyc
 .env
 .netrc
+config/exclude.local.yaml

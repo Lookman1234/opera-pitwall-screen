@@ -117,8 +117,10 @@ def test_excluded_operator_refused():
         fixture.build_project(tmp, os.path.join(ROOT, "config", "params.yaml"))
         p = os.path.join(tmp, "config", "sites.yaml")
         cfg = yaml.safe_load(open(p))
-        cfg["sites"][0]["operator"] = "Employer Co Mining LLC"
+        cfg["sites"][0]["name"] = "Example Employer Pit"
         yaml.safe_dump(cfg, open(p, "w"))
+        with open(os.path.join(tmp, "config", "exclude.local.yaml"), "w") as f:
+            f.write("exclude:\n  - Example Employer\n")
         r = subprocess.run([sys.executable, os.path.join(ROOT, "code", "03_detect_validate.py"), "--root", tmp],
                            capture_output=True, text=True)
         assert r.returncode != 0 and "excluded operator" in (r.stderr + r.stdout)
