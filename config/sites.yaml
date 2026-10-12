@@ -17,7 +17,10 @@ sites:
     # Pit centre 46.0106 N, 112.4800 W (mindat loc-107252); box about 7 km x 7 km
     bbox: [-112.525, 45.980, -112.435, 46.040]
     frame_ids: []
-    walls: config/sites/continental_walls.geojson   # must include a wall with wall_id "D_East"
+    pit_center: [-112.4800, 46.0106]   # lon, lat (mindat loc-107252) [VERIFY on the auto-walls preview]
+    pit_radius_m: 1300                 # keeps the flooded Berkeley Pit (about 2.5 km west) out
+    wall_aliases: {D_East: faces_W_E}  # the D East highwall = east side of the pit, facing west
+    walls: config/sites/continental_walls.geojson   # optional hand-drawn override; else automatic
     stable: config/sites/continental_stable.geojson
     end_date: "2023-06-30"
     enabled: true
@@ -30,7 +33,10 @@ sites:
     # box is wide (about 14 km x 13 km). [VERIFY Saga Pit location, then shrink the box]
     bbox: [-115.622, 39.882, -115.462, 40.002]
     frame_ids: []
-    walls: config/sites/baldmountain_walls.geojson  # must include a wall with wall_id "Saga_N"
+    pit_center: null                   # [VERIFY Saga Pit centre, lon/lat]; automatic walls wait for it
+    pit_radius_m: 800
+    wall_aliases: {Saga_N: faces_S_N}  # the Saga north wall = north side of the pit, facing south
+    walls: config/sites/baldmountain_walls.geojson  # optional hand-drawn override; else automatic
     stable: config/sites/baldmountain_stable.geojson
     end_date: "2023-06-30"
     enabled: true

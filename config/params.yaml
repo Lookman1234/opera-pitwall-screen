@@ -24,3 +24,10 @@ persistence_epochs: 2           # patch must show on this many dates in a row
 lead_window_days: 180           # DECISION. An alert up to this long before a failure counts as a warning
 late_grace_days: 30             # alerts this soon after a failure are "detected after", not warnings
 event_buffer_m: 150             # events without a wall_id are matched to a wall within this distance
+
+# Automatic wall outlines (step 1b, used when no hand-drawn walls file exists)
+auto_wall_slope_min_deg: 25     # DECISION. Steeper than this inside the search radius = wall
+auto_stable_slope_max_deg: 10   # gentler than this in the outer ring = candidate stable ground
+auto_stable_gap_m: 500          # ring starts this far beyond the search radius...
+auto_stable_width_m: 2000       # ...and ends this far beyond it
+auto_stable_keep_frac: 0.5      # keep the quieter half of candidates (drops settling dumps and tailings)

@@ -1,4 +1,6 @@
-# Drawing wall outlines and stable ground (about 15 minutes per pit)
+# Optional: drawing your own wall outlines (about 15 minutes per pit)
+
+*By default you do not need this: step 1b finds the walls automatically from a free elevation model, and you only check its preview map. Draw your own only if the preview is wrong (for example, a wall cut after 2015 that the elevation model does not show), or to plug in PitGeom outlines.*
 
 *Plain-language header: if PitGeom is not ready, you draw the walls yourself on a free map website. No software to install.*
 

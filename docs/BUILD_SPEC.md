@@ -12,7 +12,9 @@ SOURCES:        OPERA L3 DISP-S1 v1 (NASA JPL / ASF DAAC), 30 m UTM, Sentinel-1 
                 https://www.earthdata.nasa.gov/data/catalog/asf-opera-l3-disp-s1-v1-1
                 OPERA L3 DISP-S1-STATIC v1 (line-of-sight vectors, layover/shadow mask).
                 https://www.earthdata.nasa.gov/data/catalog/asf-opera-l3-disp-s1-static-v1-1
-                Wall outlines: PitGeom (companion project) or author-drawn GeoJSON.
+                Wall outlines: automatic from Copernicus DEM GLO-30 (30 m, AWS Open Data,
+                https://registry.opendata.aws/copernicus-dem/), overridable by PitGeom or
+                author-drawn GeoJSON.
                 Failure events: GroundFall-US (companion project) or author-reviewed MSHA
                 accident records (https://arlweb.msha.gov/OpenGovernmentData/OGIMSHA.asp).
 UNIT:           Wall x satellite track x acquisition date (detection); reported failure (validation).

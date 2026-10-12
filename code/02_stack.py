@@ -24,7 +24,7 @@ from collections import defaultdict
 import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from pitwall import disp_io, geo, stack as stk  # noqa: E402
+from pitwall import disp_io, geo, sitemasks, stack as stk  # noqa: E402
 from pitwall.util import load_config, site_dir  # noqa: E402
 
 
@@ -70,9 +70,11 @@ def process_site(root, site, params, qa):
         for g in grans:
             g["epsg"] = epsg
         s = stk.rebase(grans, params["coherence_min"], params["use_recommended_mask"])
-        walls = geo.load_geojson_polygons(os.path.join(root, site["walls"]))
-        stable = geo.load_geojson_polygons(os.path.join(root, site["stable"]))
-        stable_mask = geo.features_mask(stable, s.x, s.y, epsg)
+        stable_mask, stable_src = sitemasks.stable_mask(root, site, s.x, s.y, epsg)
+        n_cand = int(stable_mask.sum())
+        if stable_src == "auto":
+            stable_mask = sitemasks.refine_stable(s, stable_mask, params.get("auto_stable_keep_frac", 0.5))
+        np.save(os.path.join(out, f"F{frame}_stable_mask.npy"), stable_mask)
         offsets = stk.reference_to_stable(s, stable_mask, params["stable_min_pixels"])
         stk.save(s, os.path.join(out, f"F{frame}_stack.npz"))
         static_files = [f for f in glob.glob(os.path.join(raw, "static", "*")) if frame_of(f) == frame]
@@ -83,7 +85,8 @@ def process_site(root, site, params, qa):
         n_dropped = int(np.isnan(offsets).sum())
         qa.append(f"{site['id']} F{frame}: {len(grans)} granules -> {len(s.dates)} dates "
                   f"({s.dates[0]} to {s.dates[-1]}), grid {s.disp.shape[1]}x{s.disp.shape[2]} px, "
-                  f"EPSG {epsg}, segment breaks {s.breaks or 'none'}, stable px {int(stable_mask.sum())}, "
+                  f"EPSG {epsg}, segment breaks {s.breaks or 'none'}, stable px {int(stable_mask.sum())} "
+                  f"({stable_src}; {n_cand} candidates), "
                   f"dates dropped for thin stable reference {n_dropped}, "
                   f"static {'yes' if static_files else 'MISSING'}")
 
@@ -99,6 +102,9 @@ def main():
     sites, params = load_config(a.root)
     qa = []
     for s in sites:
+        if not sitemasks.has_walls(a.root, s):
+            qa.append(f"{s['id']}: SKIPPED, no wall outlines yet (hand-drawn file or step 1b)")
+            continue
         process_site(a.root, s, params, qa)
     path = os.path.join(a.root, "data", "processed", "qa_report.txt")
     with open(path, "w") as f:

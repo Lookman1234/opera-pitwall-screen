@@ -55,5 +55,8 @@ Same columns, one row per event per track.
 | max_abs_vel_m_per_yr | Fastest valid wall pixel |
 | alert_x, alert_y | Centroid of alerting pixels (UTM metres) |
 
+## Wall names
+Automatic wall sections are named `faces_<direction>_<side>`: the compass direction the face looks toward, then the side of the pit it sits on. `faces_W_E` is on the east side, facing west (the usual east wall). `wall_aliases` in config/sites.yaml maps reported names such as `D_East` onto these. `wall_id_reported` in the outcome tables keeps the name as reported.
+
 ## paper/stats.json
 Every number quoted anywhere, plus the exact parameters used. `combined` holds the headline counts; `tracks` holds per-track counts, the revisit interval and the C-band aliasing ceiling; `coverage` summarises wall visibility.

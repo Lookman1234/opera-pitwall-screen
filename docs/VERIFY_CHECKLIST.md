@@ -16,6 +16,11 @@ Then open `tests/fixture.py` and read its top paragraph: four fake walls, each w
 - [ ] Open https://www.earthdata.nasa.gov/data/catalog/asf-opera-l3-disp-s1-static-v1-1. It loads. ___
 - [ ] Licenses: OPERA data is NASA open data with no restrictions; MSHA data is US government public domain. Confirm nothing you add (wall outlines, event notes) comes from your employer's confidential records. ___
 
+## Part 3a: Check the automatic wall outlines (10 min, after the first run)
+
+- [ ] Open `paper/figures/continental_auto_walls.png`. The blue ring should follow the Continental Pit's walls, and the section labelled `W_E = D_East` should be the east highwall that failed in November 2022. Compare with Google Maps satellite view of Butte. ___
+- [ ] The orange "stable" area should avoid the East Dump Complex, tailings and the Berkeley Pit lake. If it does not, tell me where it is wrong and I will cut those areas out. ___
+
 ## Part 3: Check the real results by hand (60 to 90 min, after the real run)
 
 *To be filled with exact files and rows after the GitHub run. It will include:*

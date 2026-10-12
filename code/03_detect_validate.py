@@ -28,7 +28,7 @@ import numpy as np
 import pandas as pd
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from pitwall import detect, geo, stack as stk, validate  # noqa: E402
+from pitwall import detect, sitemasks, stack as stk, validate  # noqa: E402
 from pitwall.util import load_config  # noqa: E402
 
 RANK = {"warned": 0, "detected_after": 1, "missed": 2, "not_observable": 3}
@@ -52,25 +52,25 @@ def main():
     events_all = pd.read_csv(a.events or os.path.join(a.root, "config", "events.csv"), dtype=str)
     proc = os.path.join(a.root, "data", "processed")
     qa, cov_rows, ev_rows, al_rows, track_stats = [], [], [], [], []
+    done_sites = []
     for site in sites:
-        walls = geo.load_geojson_polygons(os.path.join(a.root, site["walls"]))
-        stable = geo.load_geojson_polygons(os.path.join(a.root, site["stable"]))
         stacks = sorted(glob.glob(os.path.join(proc, site["id"], "F*_stack.npz")))
         if not stacks:
-            raise SystemExit(f"{site['id']}: no stacks; run 02_stack.py first")
-        ev_site = events_all[events_all.site_id == site["id"]].reset_index(drop=True)
+            qa.append(f"{site['id']}: SKIPPED, no stacks (no wall outlines yet, or step 2 not run)")
+            continue
+        done_sites.append(site)
+        ev_site = events_all[events_all.site_id == site["id"]].reset_index(drop=True).copy()
+        aliases = site.get("wall_aliases") or {}
+        ev_site["wall_id_reported"] = ev_site["wall_id"]
+        ev_site["wall_id"] = ev_site["wall_id"].map(lambda w: aliases.get(w, w) if isinstance(w, str) else w)
         for sp in stacks:
             frame = os.path.basename(sp).split("_")[0]
             s = stk.load(sp)
             shape = s.disp.shape[1:]
             static = load_static(sp.replace("_stack.npz", "_static.npz"), shape)
-            wall_masks = {}
-            props = {}
-            for w in walls:
-                wid = str(w["properties"]["wall_id"])
-                wall_masks[wid] = geo.features_mask([w], s.x, s.y, s.epsg)
-                props[wid] = w["properties"]
-            stable_mask = geo.features_mask(stable, s.x, s.y, s.epsg)
+            wall_masks, props, wall_src = sitemasks.wall_masks(a.root, site, s.x, s.y, s.epsg)
+            smp = sp.replace("_stack.npz", "_stable_mask.npy")
+            stable_mask = np.load(smp) if os.path.exists(smp) else sitemasks.stable_mask(a.root, site, s.x, s.y, s.epsg)[0]
             rows, eps, _ = detect.detect(s, wall_masks, stable_mask, p, static)
             pd.DataFrame(rows).to_csv(os.path.join(proc, site["id"], f"{frame}_epochs.csv"), index=False)
             cov = detect.wall_coverage(s, wall_masks, static, props, p["coherent_epoch_frac"])
@@ -86,7 +86,7 @@ def main():
                                 "first_date": s.dates[0].isoformat(), "last_date": s.dates[-1].isoformat(),
                                 "segment_breaks": list(s.breaks), **alias, **summ})
             unassigned = ev_out[ev_out.assigned_wall.isna()]
-            qa.append(f"{site['id']} {frame}: walls {len(wall_masks)} "
+            qa.append(f"{site['id']} {frame}: walls {len(wall_masks)} ({wall_src}) "
                       f"(px {', '.join(f'{k}={int(v.sum())}' for k, v in wall_masks.items())}), "
                       f"stable px {int(stable_mask.sum())}, alert episodes {len(eps)}, "
                       f"events {len(ev_out)} (unassigned to a wall: {len(unassigned)}), "
@@ -96,6 +96,8 @@ def main():
                 qa.append(f"  WARNING walls with zero pixels on this grid: {empty}")
 
     ev = pd.concat(ev_rows, ignore_index=True) if ev_rows else pd.DataFrame()
+    if not done_sites:
+        print("No site has wall outlines and stacks yet; nothing to validate.")
     al = pd.concat(al_rows, ignore_index=True) if al_rows else pd.DataFrame()
     cov = pd.DataFrame(cov_rows)
     ev.to_csv(os.path.join(proc, "event_outcomes_by_track.csv"), index=False)
@@ -109,6 +111,8 @@ def main():
             g = g.assign(r=g.outcome.map(RANK)).sort_values(["r", "lead_days"], ascending=[True, False])
             best.append(g.iloc[0].drop(labels="r"))
     best = pd.DataFrame(best)
+    if not len(best):
+        best = pd.DataFrame(columns=["event_id", "outcome", "lead_days"])
     best.to_csv(os.path.join(proc, "event_outcomes.csv"), index=False)
     observable = best[best.outcome != "not_observable"] if len(best) else best
     warned = int((best.outcome == "warned").sum()) if len(best) else 0
@@ -117,7 +121,8 @@ def main():
     stats = {
         "generated": dt.date.today().isoformat(),
         "params": p,
-        "sites": [{k: s[k] for k in ("id", "name", "operator", "bbox")} for s in sites],
+        "sites": [{k: s.get(k) for k in ("id", "name", "operator", "bbox", "pit_center", "wall_aliases")}
+                  for s in done_sites],
         "tracks": track_stats,
         "combined": {
             "n_events": int(len(best)),

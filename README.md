@@ -12,6 +12,7 @@ A reproducible pipeline over OPERA L3 DISP-S1 (Sentinel-1 C-band InSAR, 30 m, mi
 
 ```
 code/01_fetch.py             download DISP-S1 + STATIC for each site (needs Earthdata login)
+code/01b_auto_walls.py       wall outlines and stable ground from the Copernicus 30 m elevation model
 code/02_stack.py             rebase granules, apply quality masks, stable-ground reference
 code/03_detect_validate.py   alerts, wall visibility, event outcomes, paper/stats.json
 code/04_figures.py           coverage maps and wall timelines
@@ -34,6 +35,7 @@ Locally (Python 3.10+, free Earthdata login in `~/.netrc` or `EARTHDATA_USERNAME
 pip install -r requirements.txt
 python tests/run_tests.py              # expect: ALL TESTS PASSED
 python code/01_fetch.py
+python code/01b_auto_walls.py         # then check paper/figures/<site>_auto_walls.png
 python code/02_stack.py --inspect data/raw/<site>/disp/<any file>   # check layer names once
 python code/02_stack.py
 python code/03_detect_validate.py
@@ -46,7 +48,8 @@ python code/04_figures.py
 |---|---|---|---|
 | OPERA L3 DISP-S1 v1, NASA JPL / ASF DAAC, https://www.earthdata.nasa.gov/data/catalog/asf-opera-l3-disp-s1-v1-1 | mid-2016 to download date | NASA open data, no restrictions | see data/raw/PROVENANCE.txt |
 | OPERA L3 DISP-S1-STATIC v1, https://www.earthdata.nasa.gov/data/catalog/asf-opera-l3-disp-s1-static-v1-1 | per frame | NASA open data | see PROVENANCE.txt |
-| Wall outlines (PitGeom or author-drawn) | [pending] | CC BY 4.0 | |
+| Copernicus DEM GLO-30 (AWS Open Data, https://registry.opendata.aws/copernicus-dem/) for automatic wall outlines | acquired about 2011-2015 | free use with attribution (Copernicus DEM licence) | see PROVENANCE.txt |
+| Wall outlines override (PitGeom or author-drawn), optional | | CC BY 4.0 | |
 | Failure events (GroundFall-US or reviewed MSHA records, https://arlweb.msha.gov/OpenGovernmentData/OGIMSHA.asp) | [pending] | US public domain | |
 
 ## Headline numbers

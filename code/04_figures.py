@@ -28,7 +28,7 @@ from matplotlib.colors import ListedColormap  # noqa: E402
 from matplotlib.patches import Patch  # noqa: E402
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from pitwall import geo, stack as stk  # noqa: E402
+from pitwall import geo, sitemasks, stack as stk  # noqa: E402
 from pitwall.util import load_config  # noqa: E402
 
 # Reference palette (dataviz skill), first three categorical slots, which validate all-pairs
@@ -49,44 +49,40 @@ def stamp(fig, final):
                  color="#b00020", fontweight="bold")
 
 
-def coverage_map(site, frame, s, static, walls, stable, events, p, out, final):
+def coverage_map(site, frame, s, static, wall_masks, stable_mask, events, p, out, final):
     frac_valid = s.valid.mean(0)
     wall_any = np.zeros(frac_valid.shape, bool)
-    for w in walls:
-        wall_any |= geo.features_mask([w], s.x, s.y, s.epsg)
+    for m in wall_masks.values():
+        wall_any |= m
     cls = np.full(frac_valid.shape, np.nan)
     hidden = (static["layover_shadow_mask"] != 0) if static is not None and "layover_shadow_mask" in static \
         else np.zeros_like(wall_any)
     cls[wall_any] = 0
     cls[wall_any & (frac_valid < p["coherent_epoch_frac"])] = 1
     cls[wall_any & hidden] = 2
-    ext = [(s.x[0] - s.x.mean()) / 1000, (s.x[-1] - s.x.mean()) / 1000,
-           (s.y[-1] - s.y.mean()) / 1000, (s.y[0] - s.y.mean()) / 1000]
+    x0, y0 = s.x.mean(), s.y.mean()
+    ext = [(s.x[0] - x0) / 1000, (s.x[-1] - x0) / 1000, (s.y[-1] - y0) / 1000, (s.y[0] - y0) / 1000]
+    xk, yk = (s.x - x0) / 1000, (s.y - y0) / 1000
     fig, ax = plt.subplots(figsize=(6.2, 5.6))
     ax.imshow(frac_valid, cmap="Greys", vmin=0, vmax=1.6, extent=ext, origin="upper", alpha=0.35)
     ax.imshow(cls, cmap=ListedColormap([BLUE, ORANGE, AQUA]), vmin=-0.5, vmax=2.5, extent=ext,
               origin="upper", interpolation="nearest")
-    for w in walls:
-        for rings in w["polygons"]:
-            rx, ry = geo.lonlat_to_utm(np.array(rings[0])[:, 0], np.array(rings[0])[:, 1], s.epsg)
-            ax.plot((np.asarray(rx) - s.x.mean()) / 1000, (np.asarray(ry) - s.y.mean()) / 1000,
-                    color=INK, lw=0.8)
-            ax.text((np.mean(rx) - s.x.mean()) / 1000, (np.mean(ry) - s.y.mean()) / 1000,
-                    str(w["properties"]["wall_id"]), ha="center", va="center", fontsize=9,
-                    fontweight="bold", color=INK,
+    ax.contour(xk, yk, stable_mask.astype(float), levels=[0.5], colors=[INK2], linewidths=0.8, linestyles="--")
+    labelled = set(events.get("assigned_wall", pd.Series(dtype=str)).dropna()) if len(events) else set()
+    xx, yy = np.meshgrid(xk, yk)
+    for wid, m in wall_masks.items():
+        if not m.any():
+            continue
+        ax.contour(xk, yk, m.astype(float), levels=[0.5], colors=[INK], linewidths=0.5)
+        if wid in labelled or len(wall_masks) <= 8:
+            ax.text(xx[m].mean(), yy[m].mean(), wid.replace("faces_", ""), ha="center", va="center",
+                    fontsize=8, fontweight="bold", color=INK,
                     bbox=dict(boxstyle="round,pad=0.2", fc=SURF, ec="none", alpha=0.8))
-    for st in stable:
-        for rings in st["polygons"]:
-            for ring in rings:
-                rx, ry = geo.lonlat_to_utm(np.array(ring)[:, 0], np.array(ring)[:, 1], s.epsg)
-                ax.plot((np.asarray(rx) - s.x.mean()) / 1000, (np.asarray(ry) - s.y.mean()) / 1000,
-                        color=INK2, lw=0.8, ls="--")
     ev = events.dropna(subset=["lon", "lat"]) if len(events) else events
     for _, e in ev.iterrows():
         ex, ey = geo.lonlat_to_utm(float(e.lon), float(e.lat), s.epsg)
-        ax.plot((ex - s.x.mean()) / 1000, (ey - s.y.mean()) / 1000, marker="X", ms=10,
-                mfc=INK, mec=SURF, mew=1.5)
-        ax.annotate(str(e.event_id), ((ex - s.x.mean()) / 1000, (ey - s.y.mean()) / 1000),
+        ax.plot((ex - x0) / 1000, (ey - y0) / 1000, marker="X", ms=10, mfc=INK, mec=SURF, mew=1.5)
+        ax.annotate(str(e.event_id), ((ex - x0) / 1000, (ey - y0) / 1000),
                     xytext=(6, 6), textcoords="offset points", fontsize=8)
     ax.set_xlabel("Easting from centre (km)")
     ax.set_ylabel("Northing from centre (km)")
@@ -105,8 +101,14 @@ def coverage_map(site, frame, s, static, walls, stable, events, p, out, final):
     plt.close(fig)
 
 
-def timelines(site, frame, epochs, alerts, events, out, final):
+def timelines(site, frame, epochs, alerts, events, out, final, max_panels=8):
     walls = list(dict.fromkeys(epochs.wall_id))
+    if len(walls) > max_panels:
+        # many automatic wall sections: show walls with a reported event, then the most-alerted ones
+        keep = [w for w in walls if w in set(events.get("assigned_wall", pd.Series(dtype=str)).dropna())]
+        ranked = epochs.groupby("wall_id").alert_px.sum().sort_values(ascending=False).index
+        keep += [w for w in ranked if w not in keep]
+        walls = keep[:max_panels]
     fig, axes = plt.subplots(len(walls), 1, figsize=(7.2, 1.7 * len(walls) + 0.6), sharex=True, squeeze=False)
     ymax = np.nanmax(epochs.max_abs_vel_m_per_yr.to_numpy(dtype=float) * 100) if len(epochs) else 1
     for ax, wid in zip(axes[:, 0], walls):
@@ -147,11 +149,16 @@ def main():
     proc = os.path.join(a.root, "data", "processed")
     out = os.path.join(a.root, "paper", "figures")
     os.makedirs(out, exist_ok=True)
-    ev_all = pd.read_csv(os.path.join(proc, "event_outcomes_by_track.csv"), dtype={"wall_id": str})
-    al_all = pd.read_csv(os.path.join(proc, "alerts.csv"), dtype={"wall_id": str})
+    try:
+        ev_all = pd.read_csv(os.path.join(proc, "event_outcomes_by_track.csv"), dtype={"wall_id": str})
+    except (FileNotFoundError, pd.errors.EmptyDataError):
+        print("no results yet (no site has wall outlines and stacks); nothing to draw")
+        return
+    try:
+        al_all = pd.read_csv(os.path.join(proc, "alerts.csv"), dtype={"wall_id": str})
+    except pd.errors.EmptyDataError:
+        al_all = pd.DataFrame(columns=["wall_id", "raised_date", "end_date", "site_id", "frame"])
     for site in sites:
-        walls = geo.load_geojson_polygons(os.path.join(a.root, site["walls"]))
-        stable = geo.load_geojson_polygons(os.path.join(a.root, site["stable"]))
         for sp in sorted(glob.glob(os.path.join(proc, site["id"], "F*_stack.npz"))):
             frame = os.path.basename(sp).split("_")[0]
             s = stk.load(sp)
@@ -160,7 +167,10 @@ def main():
             ev = ev_all[(ev_all.site_id == site["id"]) & (ev_all.frame == frame)]
             al = al_all[(al_all.site_id == site["id"]) & (al_all.frame == frame)] if len(al_all) else al_all
             epochs = pd.read_csv(os.path.join(proc, site["id"], f"{frame}_epochs.csv"), dtype={"wall_id": str})
-            coverage_map(site, frame, s, static, walls, stable, ev, p, out, a.final)
+            wall_masks, _, _ = sitemasks.wall_masks(a.root, site, s.x, s.y, s.epsg)
+            smp = sp.replace("_stack.npz", "_stable_mask.npy")
+            stable = np.load(smp) if os.path.exists(smp) else sitemasks.stable_mask(a.root, site, s.x, s.y, s.epsg)[0]
+            coverage_map(site, frame, s, static, wall_masks, stable, ev, p, out, a.final)
             timelines(site, frame, epochs, al, ev, out, a.final)
             print(f"figures: {site['id']} {frame}")
 

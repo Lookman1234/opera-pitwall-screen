@@ -10,6 +10,8 @@ You need: a GitHub account, a NASA Earthdata account (https://urs.earthdata.nasa
 2. Click **New repository secret**. Name: `EARTHDATA_USERNAME`. Secret: your Earthdata username. Click **Add secret**.
 3. Again: Name `EARTHDATA_PASSWORD`, Secret: your Earthdata password.
 
+4. Again: Name `PITWALL_EXCLUDE`, Secret: the comma-separated list in your private file `config/exclude.local.yaml` (I will give you the exact text to paste). This keeps the employer exclusion active on GitHub without the name appearing anywhere public.
+
 Secrets are hidden: nobody, including me, can read them back. They are only handed to the download step.
 
 ## 2. Allow NASA's data archive to be used by your login (2 min)

@@ -73,6 +73,47 @@ def test_rebase_records_gap():
     assert len(set(s.segment.tolist())) == 2
 
 
+def test_auto_walls_name_east_wall():
+    from pitwall import dem
+    x, y = fixture.grid()
+    xx, yy = np.meshgrid(x, y)
+    r = np.hypot(xx - fixture.X0, yy - fixture.Y0)
+    z = 2000 - np.clip((1050 - r) / 600, 0, 1) * 600.0          # 45-degree walls between r=450 and 1050
+    masks, props = dem.auto_walls(z, x, y, (fixture.X0, fixture.Y0), 1200)
+    assert "faces_W_E" in masks and "faces_S_N" in masks and "faces_E_W" in masks, sorted(masks)
+    m = masks["faces_W_E"]
+    assert (xx[m] > fixture.X0).all()                            # east side of the pit
+    assert abs(props["faces_W_E"]["aspect_deg"] - 270) < 10, props["faces_W_E"]
+    assert abs(props["faces_W_E"]["slope_deg"] - 45) < 3, props["faces_W_E"]
+    st = dem.auto_stable(z, x, y, (fixture.X0, fixture.Y0), 1300, 1800)
+    assert st.any() and not (st & (r < 1300)).any()
+
+
+def test_regrid_nearest_identity_and_shift():
+    from pitwall import dem
+    x, y = fixture.grid()
+    m = np.zeros((len(y), len(x)), bool)
+    m[10:20, 30:40] = True
+    assert (dem.regrid_nearest(m, x, y, x, y) == m).all()
+    shifted = dem.regrid_nearest(m, x, y, x + 14.0, y - 14.0)    # under half a pixel: same cells
+    assert (shifted == m).all()
+
+
+def test_refine_stable_drops_settling_ground():
+    from pitwall import sitemasks
+    dates, D, coh, _ = fixture.truth()
+    D = D.copy()
+    x, y = fixture.grid()
+    cand = np.zeros(D.shape[1:], bool)
+    cand[:20, :] = True                                           # candidate strip along the top
+    days = np.array([(d - dates[0]).days for d in dates]) / 365.25
+    D[:, :20, :10] += (-0.05 * days)[:, None, None]               # a settling "dump top" inside the strip
+    s = stk.rebase(fixture.granules_from_truth(dates, D, coh), 0.0, False)
+    kept = sitemasks.refine_stable(s, cand)
+    assert kept[:20, :10].sum() == 0, int(kept[:20, :10].sum())
+    assert kept.sum() > 0.3 * cand.sum()
+
+
 def test_wilson():
     lo, hi = validate.wilson_ci(1, 2)
     assert 0.09 < lo < 0.10 and 0.90 < hi < 0.91, (lo, hi)
@@ -109,6 +150,44 @@ def test_end_to_end_synthetic():
         # print for the record (alerts without events come from the synthetic seasonal delay)
         print(f"    synthetic: lead E1 = {int(e1.lead_days)} days; alert episodes {c['n_alert_episodes']}, "
               f"without reported event {c['n_alerts_without_reported_event']}")
+
+
+def test_end_to_end_with_automatic_walls():
+    import importlib.util
+    import yaml
+    spec = importlib.util.spec_from_file_location("autowalls", os.path.join(ROOT, "code", "01b_auto_walls.py"))
+    aw = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(aw)
+    with tempfile.TemporaryDirectory() as tmp:
+        fixture.build_project(tmp, os.path.join(ROOT, "config", "params.yaml"))
+        for f in ("synth_walls.geojson", "synth_stable.geojson"):
+            os.remove(os.path.join(tmp, "config", "sites", f))
+        cfgp = os.path.join(tmp, "config", "sites.yaml")
+        cfg = yaml.safe_load(open(cfgp))
+        lon, lat = geo.utm_to_lonlat(fixture.X0, fixture.Y0, fixture.EPSG, use_pyproj=False)
+        cfg["sites"][0].update(pit_center=[float(lon), float(lat)], pit_radius_m=1200,
+                               wall_aliases={"N": "faces_S_N", "W": "faces_E_W", "S": "faces_N_S"})
+        yaml.safe_dump(cfg, open(cfgp, "w"))
+        x, y = fixture.grid()
+        xx, yy = np.meshgrid(x, y)
+        z = 2000 - np.clip((1050 - np.hypot(xx - fixture.X0, yy - fixture.Y0)) / 600, 0, 1) * 600.0
+        params = yaml.safe_load(open(os.path.join(tmp, "config", "params.yaml")))
+        names, labels, props, stable, centre = aw.build(cfg["sites"][0], z, x, y, fixture.EPSG, params)
+        np.savez_compressed(os.path.join(tmp, "data", "processed", "synth", "auto_walls.npz"), labels=labels,
+                            names=np.array(names), aspect=np.array([props[n]["aspect_deg"] for n in names]),
+                            slope=np.array([props[n]["slope_deg"] for n in names]), stable=stable, x=x, y=y,
+                            epsg=fixture.EPSG, dem=z)
+        aw.preview(cfg["sites"][0], z, x, y, names, labels, props, stable, centre,
+                   cfg["sites"][0]["wall_aliases"], os.path.join(tmp, "auto_walls.png"), False)
+        for script in ("03_detect_validate.py", "04_figures.py"):
+            r = subprocess.run([sys.executable, os.path.join(ROOT, "code", script), "--root", tmp],
+                               capture_output=True, text=True)
+            assert r.returncode == 0, script + r.stderr + r.stdout
+        ev = pd.read_csv(os.path.join(tmp, "data", "processed", "event_outcomes.csv"))
+        got = dict(zip(ev.event_id, ev.outcome))
+        assert got == fixture.EXPECTED, got
+        assert ev.set_index("event_id").loc["E1", "assigned_wall"] == "faces_W_E"
+        assert os.path.exists(os.path.join(tmp, "paper", "figures", "synth_F99999_coverage.png"))
 
 
 def test_excluded_operator_refused():

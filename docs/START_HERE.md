@@ -22,7 +22,8 @@ All sources are free and public. One needs a free NASA login.
 |---|---|---|---|
 | OPERA DISP-S1 (NASA / JPL) | Satellite radar maps of how much the ground moved toward or away from the satellite, every 6 to 12 days, 30 m squares, mid-2016 to now | One map of one area for one date, saying "this 30 m square moved 1.2 cm since the starting date" | https://www.earthdata.nasa.gov/data/catalog/asf-opera-l3-disp-s1-v1-1 |
 | OPERA DISP-S1-STATIC | The fixed viewing-angle file that goes with each map, showing which squares the satellite cannot see (hidden behind a slope, or squashed) | One map of viewing angles and a "cannot see here" mask | https://www.earthdata.nasa.gov/data/catalog/asf-opera-l3-disp-s1-static-v1-1 |
-| Pit wall outlines (PitGeom, your companion project) | Drawn outlines of each pit wall | One wall: its outline and which way it faces | Your PitGeom output, or hand-drawn for the pilot |
+| Copernicus elevation model (European Space Agency, free) | A 30 m height map of the whole world, used to find pit walls automatically | One square: its height above sea level | https://registry.opendata.aws/copernicus-dem/ |
+| Pit wall outlines (PitGeom, your companion project, optional) | Your own outlines, if you want to replace the automatic ones | One wall: its outline and which way it faces | Your PitGeom output |
 | Wall failure dates (GroundFall-US, your companion project) | A list of reported wall failures with a date and place | One event: mine, date, location, size if known | Your GroundFall-US output, or MSHA records for the pilot |
 | MSHA open data (fallback for the pilot) | The federal mine-safety agency's public accident and mine lists, updated weekly | One reported accident: mine ID, date, type | https://arlweb.msha.gov/OpenGovernmentData/OGIMSHA.asp |
 
