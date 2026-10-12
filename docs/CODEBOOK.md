@@ -11,7 +11,7 @@ All speeds are line-of-sight (LOS), metres per year unless the name says cm. Dat
 | event_id, site_id, wall_id, date, lon, lat, size_class, source, source_url, confidence, notes | Copied from config/events.csv | Author-curated event list |
 | assigned_wall | Wall the event was matched to | wall_id if given, else nearest wall within event_buffer_m |
 | dist_to_wall_m | Distance from event point to that wall (0 if wall_id given) | Pixel-centre distance |
-| outcome | warned / detected_after / missed / not_observable | See validate.py |
+| outcome | warned / detected_after / missed / not_observable / unlocated (reported wall not yet identified on this site; excluded from all rates) | See validate.py |
 | lead_days | Days between the alert being raised and the failure (warned only) | Capped at lead_window_days |
 | reason | Why not observable, or why detected after | Text |
 | frame | Satellite track giving the best outcome | OPERA frame id |

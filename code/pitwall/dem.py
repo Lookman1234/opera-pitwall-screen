@@ -120,3 +120,35 @@ def regrid_nearest(mask, src_x, src_y, dst_x, dst_y):
     outside = ((dst_y < src_y.min() - 15) | (dst_y > src_y.max() + 15))[:, None] | \
               ((dst_x < src_x.min() - 15) | (dst_x > src_x.max() + 15))[None, :]
     return out & ~outside
+
+
+def find_pits(z, pixel=30.0, window_m=2500.0, depth_min_m=40.0, area_min_m2=1.0e5):
+    """District mode: label open pits as closed depressions well below the surrounding ground.
+
+    The surrounding ground is a smoothed surface (median over window_m). Pixels more than
+    depth_min_m below it, in connected patches larger than area_min_m2, are pits. Returns
+    (labels, list of pit dicts with centre index, area and depth), largest pit first.
+    """
+    zf = np.where(np.isfinite(z), z, np.nanmedian(z))
+    w = max(3, int(window_m / pixel) | 1)
+    coarse = ndimage.median_filter(zf[::4, ::4], size=max(3, w // 4))
+    surround = ndimage.zoom(coarse, (zf.shape[0] / coarse.shape[0], zf.shape[1] / coarse.shape[1]), order=1)
+    surround = surround[: zf.shape[0], : zf.shape[1]]
+    deep = (surround - zf) > depth_min_m
+    lab, n = ndimage.label(deep)
+    pits = []
+    for k in range(1, n + 1):
+        m = lab == k
+        area = m.sum() * pixel * pixel
+        if area < area_min_m2:
+            continue
+        iy, ix = np.nonzero(m)
+        pits.append({"label": k, "iy": float(iy.mean()), "ix": float(ix.mean()), "area_m2": float(area),
+                     "depth_m": float(np.max(surround[m] - zf[m])),
+                     "radius_m": float(np.sqrt(area / np.pi))})
+    pits.sort(key=lambda p: -p["area_m2"])
+    out = np.zeros(z.shape, np.int16)
+    for i, p in enumerate(pits, start=1):
+        out[lab == p["label"]] = i
+        p["pit"] = i
+    return out, pits

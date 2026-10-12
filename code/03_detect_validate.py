@@ -31,7 +31,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from pitwall import detect, sitemasks, stack as stk, validate  # noqa: E402
 from pitwall.util import load_config  # noqa: E402
 
-RANK = {"warned": 0, "detected_after": 1, "missed": 2, "not_observable": 3}
+RANK = {"warned": 0, "detected_after": 1, "missed": 2, "not_observable": 3, "unlocated": 4}
 
 
 def load_static(path, shape):
@@ -114,7 +114,7 @@ def main():
     if not len(best):
         best = pd.DataFrame(columns=["event_id", "outcome", "lead_days"])
     best.to_csv(os.path.join(proc, "event_outcomes.csv"), index=False)
-    observable = best[best.outcome != "not_observable"] if len(best) else best
+    observable = best[~best.outcome.isin(["not_observable", "unlocated"])] if len(best) else best
     warned = int((best.outcome == "warned").sum()) if len(best) else 0
     lo, hi = validate.wilson_ci(warned, len(observable))
     leads = [int(x) for x in best.lead_days.dropna()] if len(best) else []
@@ -131,6 +131,7 @@ def main():
             "n_detected_after": int((best.outcome == "detected_after").sum()) if len(best) else 0,
             "n_missed": int((best.outcome == "missed").sum()) if len(best) else 0,
             "n_not_observable": int((best.outcome == "not_observable").sum()) if len(best) else 0,
+            "n_unlocated": int((best.outcome == "unlocated").sum()) if len(best) else 0,
             "warning_rate": warned / len(observable) if len(observable) else None,
             "warning_rate_ci95": [lo, hi],
             "lead_days": sorted(leads),

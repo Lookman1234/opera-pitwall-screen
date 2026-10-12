@@ -61,7 +61,10 @@ def validate(events: pd.DataFrame, episodes: list[dict], epoch_rows: list[dict],
         wid, dist = assign_wall(rec, wall_masks, stack, p["event_buffer_m"])
         rec.update({"assigned_wall": wid, "dist_to_wall_m": dist, "outcome": None,
                     "lead_days": None, "reason": ""})
-        if wid is None or wid not in wall_masks:
+        if wid is not None and wid not in wall_masks:
+            rec.update(outcome="unlocated", reason=f"reported wall {wid} not among this site's wall sections; "
+                                                   "identify it (pit_center or wall_aliases) to score this event")
+        elif wid is None:
             rec.update(outcome="not_observable", reason="no wall within buffer")
         elif edate < first or edate > last:
             rec.update(outcome="not_observable", reason="outside data time span")
@@ -103,7 +106,7 @@ def validate(events: pd.DataFrame, episodes: list[dict], epoch_rows: list[dict],
                 ep_out.at[i, "matched_event"] = str(ev["event_id"])
                 break
 
-    observable = ev_out[ev_out.outcome != "not_observable"]
+    observable = ev_out[~ev_out.outcome.isin(["not_observable", "unlocated"])]
     warned = int((ev_out.outcome == "warned").sum())
     lo, hi = wilson_ci(warned, len(observable))
     years = (last - first).days / 365.25
@@ -117,6 +120,7 @@ def validate(events: pd.DataFrame, episodes: list[dict], epoch_rows: list[dict],
         "n_detected_after": int((ev_out.outcome == "detected_after").sum()),
         "n_missed": int((ev_out.outcome == "missed").sum()),
         "n_not_observable": int((ev_out.outcome == "not_observable").sum()),
+        "n_unlocated": int((ev_out.outcome == "unlocated").sum()),
         "warning_rate": (warned / len(observable)) if len(observable) else None,
         "warning_rate_ci95": [lo, hi],
         "lead_days_median": (float(ev_out.lead_days.dropna().median())

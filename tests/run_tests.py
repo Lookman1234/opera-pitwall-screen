@@ -89,6 +89,35 @@ def test_auto_walls_name_east_wall():
     assert st.any() and not (st & (r < 1300)).any()
 
 
+def test_district_mode_finds_two_pits():
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("autowalls", os.path.join(ROOT, "code", "01b_auto_walls.py"))
+    aw = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(aw)
+    n = 200
+    x = 400000.0 + (np.arange(n) + 0.5) * 30
+    y = 4500000.0 - (np.arange(n) + 0.5) * 30
+    xx, yy = np.meshgrid(x, y)
+    z = 2000 + 0.02 * (xx - x[0])                               # gently tilted ground
+    for (cx, cy, rad, dep) in [(x[50], y[60], 700, 250), (x[150], y[140], 450, 150)]:
+        r = np.hypot(xx - cx, yy - cy)
+        z = z - np.clip((rad - r) / rad, 0, 1) * dep * 1.0
+        z = np.where(r < rad, np.minimum(z, 2000 + 0.02 * (xx - x[0]) - dep * np.clip((rad - r) / (0.6 * rad), 0, 1)), z)
+    labels, pits = aw.dem.find_pits(z)
+    assert len(pits) == 2, [(p["area_m2"], p["depth_m"]) for p in pits]
+    assert abs(x[int(round(pits[0]["ix"]))] - x[50]) < 120 and abs(y[int(round(pits[0]["iy"]))] - y[60]) < 120
+    import yaml
+    with tempfile.TemporaryDirectory() as tmp:
+        os.makedirs(os.path.join(tmp, "config", "sites"))
+        params = yaml.safe_load(open(os.path.join(ROOT, "config", "params.yaml")))
+        site = {"id": "dist", "name": "Synthetic district (not real)"}
+        aw.district(tmp, site, z, x, y, 32612, params, tmp, False)
+        zz = np.load(os.path.join(tmp, "data", "processed", "dist", "auto_walls.npz"))
+        names = [str(s) for s in zz["names"]]
+        assert any(s.startswith("pit1_faces_") for s in names) and any(s.startswith("pit2_faces_") for s in names)
+        assert os.path.exists(os.path.join(tmp, "dist_auto_walls.png"))
+
+
 def test_regrid_nearest_identity_and_shift():
     from pitwall import dem
     x, y = fixture.grid()
@@ -112,6 +141,19 @@ def test_refine_stable_drops_settling_ground():
     kept = sitemasks.refine_stable(s, cand)
     assert kept[:20, :10].sum() == 0, int(kept[:20, :10].sum())
     assert kept.sum() > 0.3 * cand.sum()
+
+
+def test_unlocated_event_is_not_counted():
+    import yaml
+    with tempfile.TemporaryDirectory() as tmp:
+        fixture.build_project(tmp, os.path.join(ROOT, "config", "params.yaml"))
+        with open(os.path.join(tmp, "config", "events.csv"), "a") as f:
+            f.write("X9,synth,Saga_N,2018-09-01,,,,test,,test,wall name not on this site\n")
+        r = subprocess.run([sys.executable, os.path.join(ROOT, "code", "03_detect_validate.py"), "--root", tmp],
+                           capture_output=True, text=True)
+        assert r.returncode == 0, r.stderr
+        c = json.load(open(os.path.join(tmp, "paper", "stats.json")))["combined"]
+        assert c["n_unlocated"] == 1 and c["n_events_observable"] == 2 and c["n_not_observable"] == 2, c
 
 
 def test_wilson():

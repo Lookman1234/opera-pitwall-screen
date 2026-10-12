@@ -50,7 +50,7 @@ def build(site, z, x, y, epsg, p):
     return names, labels, props, stable, (float(cx), float(cy), r)
 
 
-def preview(site, z, x, y, names, labels, props, stable, centre, aliases, out, final):
+def preview(site, z, x, y, names, labels, props, stable, centre, aliases, out, final, pits=None):
     ls = LightSource(azdeg=315, altdeg=45)
     hs = ls.hillshade(np.nan_to_num(z, nan=np.nanmean(z)), vert_exag=2, dx=30, dy=30)
     ext = [(x[0] - centre[0]) / 1000, (x[-1] - centre[0]) / 1000, (y[-1] - centre[1]) / 1000, (y[0] - centre[1]) / 1000]
@@ -66,12 +66,19 @@ def preview(site, z, x, y, names, labels, props, stable, centre, aliases, out, f
     for i, n in enumerate(names):
         m = labels == i + 1
         ax.contour(xk, yk, m.astype(float), levels=[0.5], colors=[INK], linewidths=0.5)
+        if pits is not None:
+            continue                       # district mode: label pits, not every wall section
         lx, ly = (xx[m].mean() - centre[0]) / 1000, (yy[m].mean() - centre[1]) / 1000
         txt = n.replace("faces_", "") + (f"\n= {alias_of[n]}" if n in alias_of else "")
         ax.text(lx, ly, txt, fontsize=7, ha="center", va="center", color=INK,
                 bbox=dict(boxstyle="round,pad=0.15", fc=SURF, ec="none", alpha=0.8))
+    for pt in pits or []:
+        ax.text(xk[int(round(pt["ix"]))], yk[int(round(pt["iy"]))], f"pit {pt['pit']}", fontsize=9,
+                fontweight="bold", ha="center", va="center", color=INK,
+                bbox=dict(boxstyle="round,pad=0.2", fc=SURF, ec=INK, lw=0.6))
     t = np.linspace(0, 2 * np.pi, 200)
-    ax.plot(centre[2] / 1000 * np.sin(t), centre[2] / 1000 * np.cos(t), color=INK2, lw=0.8, ls="--")
+    if centre[2] > 0:
+        ax.plot(centre[2] / 1000 * np.sin(t), centre[2] / 1000 * np.cos(t), color=INK2, lw=0.8, ls="--")
     ax.set_xlabel("Easting from pit centre (km)")
     ax.set_ylabel("Northing from pit centre (km)")
     ax.grid(False)
@@ -86,6 +93,49 @@ def preview(site, z, x, y, names, labels, props, stable, centre, aliases, out, f
         fig.text(0.99, 0.995, "DRAFT - unverified", ha="right", va="top", fontsize=9, color="#b00020", fontweight="bold")
     fig.savefig(out, dpi=200)
     plt.close(fig)
+
+
+def district(root, s, z, x, y, epsg, p, figs, final):
+    """No pit centre given: find every pit in the box and outline the walls of each.
+
+    Wall names get a pit prefix (pit3_faces_S_N). Events stay unmatched until the reported
+    pit is identified on the preview map and its number is put in wall_aliases.
+    """
+    pit_lab, pits = dem.find_pits(z)
+    names, labels, props = [], np.zeros(z.shape, np.int16), {}
+    stable = np.zeros(z.shape, bool)
+    for pt in pits:
+        cx, cy = float(x[int(round(pt["ix"]))]), float(y[int(round(pt["iy"]))])
+        r = pt["radius_m"] * 1.3 + 150
+        m, pr = dem.auto_walls(z, x, y, (cx, cy), r, p.get("auto_wall_slope_min_deg", 25.0))
+        for k in sorted(m):
+            n = f"pit{pt['pit']}_{k}"
+            names.append(n)
+            labels[m[k] & (labels == 0)] = len(names)
+            props[n] = pr[k] | {"wall_id": n}
+        stable |= dem.auto_stable(z, x, y, (cx, cy), r + p.get("auto_stable_gap_m", 500.0),
+                                  r + p.get("auto_stable_width_m", 2000.0), p.get("auto_stable_slope_max_deg", 10.0))
+    for pt in pits:   # stable ground never inside any pit
+        cx, cy = float(x[int(round(pt["ix"]))]), float(y[int(round(pt["iy"]))])
+        xx, yy = np.meshgrid(x, y)
+        stable &= np.hypot(xx - cx, yy - cy) > pt["radius_m"] * 1.3 + 650
+    out = site_dir(root, "processed", s["id"])
+    np.savez_compressed(os.path.join(out, "auto_walls.npz"), labels=labels, names=np.array(names),
+                        aspect=np.array([props[n]["aspect_deg"] for n in names]),
+                        slope=np.array([props[n]["slope_deg"] for n in names]),
+                        stable=stable, x=x, y=y, epsg=epsg, dem=z)
+    with open(os.path.join(out, "pits_found.json"), "w") as f:
+        json.dump([{k: v for k, v in pt.items() if k != "label"} | {
+            "lon_lat": [float(v) for v in geo.utm_to_lonlat(float(x[int(round(pt["ix"]))]),
+                                                            float(y[int(round(pt["iy"]))]), epsg)]}
+            for pt in pits], f, indent=2)
+    write_geojson(os.path.join(root, "config", "sites", f"{s['id']}_walls.auto.geojson"),
+                  labels, names, props, x, y, epsg)
+    centre = (float(x.mean()), float(y.mean()), 0.0)
+    preview(s | {"name": s["name"] + " (all pits found)"}, z, x, y, names, labels, props, stable, centre,
+            s.get("wall_aliases"), os.path.join(figs, f"{s['id']}_auto_walls.png"), final, pits=pits)
+    print(f"{s['id']}: district mode, {len(pits)} pits, {len(names)} wall sections; "
+          "identify the reported pit on the preview, then set pit_center or wall_aliases")
 
 
 def write_geojson(path, labels, names, props, x, y, epsg):
@@ -120,11 +170,13 @@ def main():
         if os.path.exists(os.path.join(a.root, s.get("walls") or "~")):
             print(f"{s['id']}: hand-drawn walls file present; automatic outlines not needed")
             continue
-        if not s.get("pit_center"):
-            print(f"{s['id']}: no pit_center in config/sites.yaml; skipped (set it to enable automatic walls)")
-            continue
-        epsg = s.get("epsg") or guess_epsg(*s["pit_center"])
+        lon_c = s["pit_center"][0] if s.get("pit_center") else (s["bbox"][0] + s["bbox"][2]) / 2
+        lat_c = s["pit_center"][1] if s.get("pit_center") else (s["bbox"][1] + s["bbox"][3]) / 2
+        epsg = s.get("epsg") or guess_epsg(lon_c, lat_c)
         z, x, y = dem.fetch_dem_utm(s["bbox"], epsg)
+        if not s.get("pit_center"):
+            district(a.root, s, z, x, y, epsg, p, figs, a.final)
+            continue
         import datetime as _dt
         with open(os.path.join(a.root, "data", "raw", "PROVENANCE.txt"), "a") as f:
             for u in dem.tile_urls(s["bbox"]):

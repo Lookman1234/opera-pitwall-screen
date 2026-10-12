@@ -33,7 +33,9 @@ sites:
     # box is wide (about 14 km x 13 km). [VERIFY Saga Pit location, then shrink the box]
     bbox: [-115.622, 39.882, -115.462, 40.002]
     frame_ids: []
-    pit_center: null                   # [VERIFY Saga Pit centre, lon/lat]; automatic walls wait for it
+    pit_center: null                   # unknown, so step 1b runs in district mode: every pit in the box is found
+                                       # and numbered on the preview map. [VERIFY which pit is Saga], then set
+                                       # pit_center to it, or set wall_aliases to Saga_N: pit<k>_faces_S_N
     pit_radius_m: 800
     wall_aliases: {Saga_N: faces_S_N}  # the Saga north wall = north side of the pit, facing south
     walls: config/sites/baldmountain_walls.geojson  # optional hand-drawn override; else automatic
