@@ -1,0 +1,45 @@
+# Plain-language header: this is the "one button" that downloads the NASA data for your
+# pits and runs the whole pipeline on GitHub's computers, using your Earthdata login
+# stored as repository secrets. Start it from the Actions tab -> "Run pipeline" -> Run workflow.
+name: Run pipeline
+on:
+  workflow_dispatch:
+    inputs:
+      site:
+        description: "Site id from config/sites.yaml (blank = all enabled sites)"
+        required: false
+        default: ""
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    env:
+      EARTHDATA_USERNAME: ${{ secrets.EARTHDATA_USERNAME }}
+      EARTHDATA_PASSWORD: ${{ secrets.EARTHDATA_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements.txt
+      - name: Self-test on the synthetic pit
+        run: python tests/run_tests.py
+      - name: Step 1, download
+        run: python code/01_fetch.py ${{ inputs.site && format('--site {0}', inputs.site) || '' }}
+      - name: Inspect one granule (layer names, for the verification checklist)
+        run: |
+          f=$(ls data/raw/*/disp/* | head -1)
+          python code/02_stack.py --inspect "$f" | tee data/processed/granule_layers.txt
+      - name: Step 2, stack
+        run: python code/02_stack.py
+      - name: Step 3, detect and validate
+        run: python code/03_detect_validate.py
+      - name: Step 4, figures
+        run: python code/04_figures.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pipeline-results
+          path: |
+            data/raw/PROVENANCE.txt
+            data/processed/
+            paper/

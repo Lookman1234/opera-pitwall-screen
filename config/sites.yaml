@@ -1,0 +1,30 @@
+# Pilot sites.
+# Plain-language header: one entry per pit. The pipeline refuses to run any site
+# whose operator matches exclude_operators, so employer pits cannot slip in.
+
+exclude_operators:
+  - "[ASK employer name to exclude]"
+
+sites:
+  - id: pit_a
+    name: "[ASK pilot pit A]"
+    operator: "[ASK operator A]"
+    state: ""
+    msha_mine_id: ""            # optional; used only by 00_events_from_msha.py
+    bbox: [0, 0, 0, 0]          # lon_min, lat_min, lon_max, lat_max (WGS84), pit plus ~2 km margin
+    frame_ids: []               # leave empty to take every OPERA frame covering the bbox
+    walls: config/sites/pit_a_walls.geojson    # wall polygons: properties wall_id, aspect_deg, slope_deg
+    stable: config/sites/pit_a_stable.geojson  # ground you judge stable (no dumps, no leach pads)
+    end_date: ""                # optional YYYY-MM-DD; empty = latest available
+    enabled: false
+  - id: pit_b
+    name: "[ASK pilot pit B]"
+    operator: "[ASK operator B]"
+    state: ""
+    msha_mine_id: ""
+    bbox: [0, 0, 0, 0]
+    frame_ids: []
+    walls: config/sites/pit_b_walls.geojson
+    stable: config/sites/pit_b_stable.geojson
+    end_date: ""
+    enabled: false

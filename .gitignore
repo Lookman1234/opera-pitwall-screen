@@ -1,0 +1,7 @@
+data/raw/*/
+!data/raw/PROVENANCE.txt
+tests/demo_run/
+__pycache__/
+*.pyc
+.env
+.netrc

@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+message: "If you use this work, please cite it as below."
+type: software
+title: "OPERA Pit-Wall Screen: testing NASA OPERA DISP-S1 InSAR for open-pit wall movement"
+version: "0.1.0"
+date-released: "[date of first release]"
+authors:
+  - family-names: "[ASK]"
+    given-names: "[ASK]"
+    orcid: "https://orcid.org/[ASK]"
+license: MIT
+repository-code: "https://github.com/[ASK github user]/opera-pitwall-screen"
+doi: "[DOI pending first release]"
+keywords:
+  - InSAR
+  - OPERA DISP-S1
+  - Sentinel-1
+  - open-pit mining
+  - slope stability
+  - ground control

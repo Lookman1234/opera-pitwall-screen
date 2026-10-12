@@ -1,0 +1,26 @@
+# Detection and validation settings.
+# Plain-language header: these are the rules the pipeline uses to decide what counts
+# as "movement" and as a "warning". Every value is copied into the stats file, so the
+# paper always states the exact rule. Values marked DECISION are yours to confirm in
+# the verification checklist; the comment says what changing them does.
+
+# Pixel quality
+coherence_min: 0.6              # DECISION. Lower keeps more wall pixels but noisier ones.
+use_recommended_mask: true      # DECISION. OPERA's own "trust this pixel" mask. May hide fast-moving walls.
+coherent_epoch_frac: 0.5        # a pixel counts as "coherent" if valid on at least half the dates
+stable_min_pixels: 20           # fewer valid stable-ground pixels than this -> that date is dropped
+
+# Velocity
+window_days: 72                 # trailing window for each velocity estimate (about 6 Sentinel-1 revisits)
+min_obs_in_window: 4            # need at least this many dates in the window
+
+# Alert rule
+k_sigma: 3.0                    # DECISION. Alert when speed exceeds k x the stable-ground jitter...
+velocity_floor_m_per_yr: 0.02   # ...and at least this fast (2 cm/yr), whichever is larger
+min_cluster_pixels: 3           # DECISION. Smallest patch that counts (3 pixels = about 2,700 m2)
+persistence_epochs: 2           # patch must show on this many dates in a row
+
+# Validation against reported failures
+lead_window_days: 180           # DECISION. An alert up to this long before a failure counts as a warning
+late_grace_days: 30             # alerts this soon after a failure are "detected after", not warnings
+event_buffer_m: 150             # events without a wall_id are matched to a wall within this distance
