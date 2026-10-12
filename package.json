@@ -1,0 +1,6 @@
+{
+  "name": "opera-pitwall-screen",
+  "private": true,
+  "description": "Builds the manuscript (code/05_manuscript.js) from paper/stats.json",
+  "dependencies": { "docx": "^9.0.0" }
+}

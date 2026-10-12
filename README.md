@@ -16,6 +16,7 @@ code/01b_auto_walls.py       wall outlines and stable ground from the Copernicus
 code/02_stack.py             rebase granules, apply quality masks, stable-ground reference
 code/03_detect_validate.py   alerts, wall visibility, event outcomes, paper/stats.json
 code/04_figures.py           coverage maps and wall timelines
+code/05_manuscript.js        the preprint (paper/manuscript.docx), every number read from paper/stats.json
 code/00_events_from_msha.py  optional: candidate events from MSHA accident records
 code/pitwall/                the library the scripts use
 config/                      sites.yaml, params.yaml (all thresholds), events.csv, wall GeoJSON
@@ -40,6 +41,7 @@ python code/02_stack.py --inspect data/raw/<site>/disp/<any file>   # check laye
 python code/02_stack.py
 python code/03_detect_validate.py
 python code/04_figures.py
+npm install && node code/05_manuscript.js
 ```
 
 ## Sources

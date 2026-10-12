@@ -45,6 +45,11 @@ jobs:
         run: python code/03_detect_validate.py
       - name: Step 4, figures
         run: python code/04_figures.py
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Step 5, manuscript from the stats file
+        run: npm install --no-audit --no-fund && node code/05_manuscript.js
       - uses: actions/upload-artifact@v4
         if: always()
         with:

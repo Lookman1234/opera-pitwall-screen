@@ -6,3 +6,4 @@ __pycache__/
 .env
 .netrc
 config/exclude.local.yaml
+node_modules/
