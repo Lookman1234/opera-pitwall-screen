@@ -1,30 +1,35 @@
 # Pilot sites.
 # Plain-language header: one entry per pit. The pipeline refuses to run any site
 # whose operator matches exclude_operators, so employer pits cannot slip in.
+# Defaults chosen 2026-10-11 (author said "go with recommended defaults"): two US
+# open pits with a dated, publicly documented wall failure inside the OPERA record.
 
 exclude_operators:
   - "[ASK employer name to exclude]"
 
 sites:
-  - id: pit_a
-    name: "[ASK pilot pit A]"
-    operator: "[ASK operator A]"
-    state: ""
-    msha_mine_id: ""            # optional; used only by 00_events_from_msha.py
-    bbox: [0, 0, 0, 0]          # lon_min, lat_min, lon_max, lat_max (WGS84), pit plus ~2 km margin
-    frame_ids: []               # leave empty to take every OPERA frame covering the bbox
-    walls: config/sites/pit_a_walls.geojson    # wall polygons: properties wall_id, aspect_deg, slope_deg
-    stable: config/sites/pit_a_stable.geojson  # ground you judge stable (no dumps, no leach pads)
-    end_date: ""                # optional YYYY-MM-DD; empty = latest available
-    enabled: false
-  - id: pit_b
-    name: "[ASK pilot pit B]"
-    operator: "[ASK operator B]"
-    state: ""
-    msha_mine_id: ""
-    bbox: [0, 0, 0, 0]
+  - id: continental
+    name: "Continental Pit, Butte, Montana"
+    operator: "Montana Resources"
+    state: MT
+    msha_mine_id: ""            # [VERIFY MSHA mine ID if MSHA records are used]
+    # Pit centre 46.0106 N, 112.4800 W (mindat loc-107252); box about 7 km x 7 km
+    bbox: [-112.525, 45.980, -112.435, 46.040]
     frame_ids: []
-    walls: config/sites/pit_b_walls.geojson
-    stable: config/sites/pit_b_stable.geojson
-    end_date: ""
-    enabled: false
+    walls: config/sites/continental_walls.geojson   # must include a wall with wall_id "D_East"
+    stable: config/sites/continental_stable.geojson
+    end_date: "2023-06-30"
+    enabled: true
+  - id: baldmountain
+    name: "Bald Mountain Mine (Saga Pit), White Pine County, Nevada"
+    operator: "Kinross Gold"
+    state: NV
+    msha_mine_id: ""
+    # Mine centroid 39.9419 N, 115.5422 W (Wikipedia). The district spans many pits, so this
+    # box is wide (about 14 km x 13 km). [VERIFY Saga Pit location, then shrink the box]
+    bbox: [-115.622, 39.882, -115.462, 40.002]
+    frame_ids: []
+    walls: config/sites/baldmountain_walls.geojson  # must include a wall with wall_id "Saga_N"
+    stable: config/sites/baldmountain_stable.geojson
+    end_date: "2023-06-30"
+    enabled: true

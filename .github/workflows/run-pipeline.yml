@@ -24,17 +24,26 @@ jobs:
       - run: pip install -r requirements.txt
       - name: Self-test on the synthetic pit
         run: python tests/run_tests.py
+      - name: Reuse earlier downloads
+        uses: actions/cache@v4
+        with:
+          path: data/raw
+          key: raw-${{ hashFiles('config/sites.yaml') }}
+          restore-keys: raw-
       - name: Step 1, download
         run: python code/01_fetch.py ${{ inputs.site && format('--site {0}', inputs.site) || '' }}
       - name: Inspect one granule (layer names, for the verification checklist)
         run: |
           f=$(ls data/raw/*/disp/* | head -1)
           python code/02_stack.py --inspect "$f" | tee data/processed/granule_layers.txt
-      - name: Step 2, stack
+      - name: Step 2, stack (skipped until wall outlines exist)
+        if: hashFiles('config/sites/*_walls.geojson') != ''
         run: python code/02_stack.py
       - name: Step 3, detect and validate
+        if: hashFiles('config/sites/*_walls.geojson') != ''
         run: python code/03_detect_validate.py
       - name: Step 4, figures
+        if: hashFiles('config/sites/*_walls.geojson') != ''
         run: python code/04_figures.py
       - uses: actions/upload-artifact@v4
         with:

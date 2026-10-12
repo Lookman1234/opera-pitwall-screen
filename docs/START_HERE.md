@@ -26,6 +26,15 @@ All sources are free and public. One needs a free NASA login.
 | Wall failure dates (GroundFall-US, your companion project) | A list of reported wall failures with a date and place | One event: mine, date, location, size if known | Your GroundFall-US output, or MSHA records for the pilot |
 | MSHA open data (fallback for the pilot) | The federal mine-safety agency's public accident and mine lists, updated weekly | One reported accident: mine ID, date, type | https://arlweb.msha.gov/OpenGovernmentData/OGIMSHA.asp |
 
+## The two pilot pits
+
+| Pit | Operator | Failure tested | Why it is a good test |
+|---|---|---|---|
+| Continental Pit, Butte, Montana | Montana Resources | About 1 million tons, D East highwall, 1 November 2022 | The state regulator's inspection report says the wall was unstable for weeks and the failure was predicted by the mine's own monitoring. So we know there was movement to find. |
+| Saga Pit, Bald Mountain Mine, Nevada | Kinross Gold | North wall, 20 January 2023 | A 2024 NIOSH-linked study found movement from July 2022 using commercially processed radar data from the same satellites. This lets us ask directly: does the free NASA product see what the paid processing saw? Winter snow is a known problem here. |
+
+Both were chosen on the condition that neither is run by your employer. If either is, tell me and I will swap it.
+
 ## What you will have at the end
 
 - [ ] **A public project page** on GitHub with the full pipeline anyone can run on any pit

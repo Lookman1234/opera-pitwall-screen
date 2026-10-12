@@ -121,6 +121,10 @@ def load_geojson_polygons(path: str) -> list[dict]:
 
     Returns a list of {"properties": {...}, "polygons": [[ring, ...], ...]}.
     """
+    import os
+    if not os.path.exists(path):
+        raise SystemExit(f"Missing {path}. Draw the wall or stable-ground outlines first "
+                         "(docs/DRAW_WALLS.md), or plug in the PitGeom file.")
     with open(path) as f:
         gj = json.load(f)
     out = []
