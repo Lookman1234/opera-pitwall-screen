@@ -152,3 +152,18 @@ def find_pits(z, pixel=30.0, window_m=2500.0, depth_min_m=40.0, area_min_m2=1.0e
         out[lab == p["label"]] = i
         p["pit"] = i
     return out, pits
+
+
+def regrid_values(values, src_x, src_y, dst_x, dst_y):
+    """Nearest-neighbour transfer of a float raster between two north-up grids (same CRS); NaN outside."""
+    ix = np.clip(np.searchsorted(src_x, dst_x), 1, len(src_x) - 1)
+    ix -= (np.abs(dst_x - src_x[ix - 1]) < np.abs(dst_x - src_x[ix]))
+    ys = src_y[::-1]
+    iy = np.clip(np.searchsorted(ys, dst_y), 1, len(ys) - 1)
+    iy -= (np.abs(dst_y - ys[iy - 1]) < np.abs(dst_y - ys[iy]))
+    iy = len(src_y) - 1 - iy
+    out = values[np.ix_(iy, ix)].astype(float)
+    outside = ((dst_y < src_y.min() - 15) | (dst_y > src_y.max() + 15))[:, None] | \
+              ((dst_x < src_x.min() - 15) | (dst_x > src_x.max() + 15))[None, :]
+    out[outside] = np.nan
+    return out

@@ -1,0 +1,53 @@
+{
+ "seed": 1003,
+ "lead_days": 20,
+ "north_alerts": 1,
+ "south_alerts": 3,
+ "episodes": [
+  {
+   "wall_id": "N",
+   "first_flag_date": "2017-03-31",
+   "raised_date": "2017-04-12",
+   "end_date": "2017-04-12",
+   "n_epochs": 2,
+   "peak_abs_vel_m_per_yr": 0.11271374672651291,
+   "max_alert_px": 3
+  },
+  {
+   "wall_id": "E",
+   "first_flag_date": "2018-06-18",
+   "raised_date": "2018-06-30",
+   "end_date": "2018-08-05",
+   "n_epochs": 5,
+   "peak_abs_vel_m_per_yr": 0.3438147306442261,
+   "max_alert_px": 88
+  },
+  {
+   "wall_id": "S",
+   "first_flag_date": "2017-03-31",
+   "raised_date": "2017-04-12",
+   "end_date": "2017-04-12",
+   "n_epochs": 2,
+   "peak_abs_vel_m_per_yr": 0.13035652041435242,
+   "max_alert_px": 59
+  },
+  {
+   "wall_id": "S",
+   "first_flag_date": "2018-11-09",
+   "raised_date": "2018-11-21",
+   "end_date": "2018-11-21",
+   "n_epochs": 2,
+   "peak_abs_vel_m_per_yr": 0.11652831733226776,
+   "max_alert_px": 120
+  },
+  {
+   "wall_id": "S",
+   "first_flag_date": "2019-02-25",
+   "raised_date": "2019-03-09",
+   "end_date": "2019-03-09",
+   "n_epochs": 2,
+   "peak_abs_vel_m_per_yr": 0.09743647277355194,
+   "max_alert_px": 35
+  }
+ ]
+}

@@ -70,6 +70,15 @@ def process_site(root, site, params, qa):
         for g in grans:
             g["epsg"] = epsg
         s = stk.rebase(grans, params["coherence_min"], params["use_recommended_mask"])
+        strat_note = "off"
+        if params.get("stratified_correction"):
+            z = sitemasks.elevation(root, site, s.x, s.y)
+            if z is None:
+                strat_note = "requested but no DEM (run step 1b)"
+            else:
+                b = stk.correct_stratified(s, z)
+                np.save(os.path.join(out, f"F{frame}_strat_slopes.npy"), b)
+                strat_note = f"on (median |b| {1000 * np.nanmedian(np.abs(b)):.3f} mm/m)"
         stable_mask, stable_src = sitemasks.stable_mask(root, site, s.x, s.y, epsg)
         n_cand = int(stable_mask.sum())
         if stable_src == "auto":
@@ -88,7 +97,7 @@ def process_site(root, site, params, qa):
                   f"EPSG {epsg}, segment breaks {s.breaks or 'none'}, stable px {int(stable_mask.sum())} "
                   f"({stable_src}; {n_cand} candidates), "
                   f"dates dropped for thin stable reference {n_dropped}, "
-                  f"static {'yes' if static_files else 'MISSING'}")
+                  f"static {'yes' if static_files else 'MISSING'}, stratified-delay correction {strat_note}")
 
 
 def main():

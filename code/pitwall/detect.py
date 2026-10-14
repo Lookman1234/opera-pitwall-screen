@@ -92,9 +92,14 @@ def wall_coverage(stack, wall_masks: dict, static: dict | None, walls_props: dic
     return out
 
 
-def detect(stack, wall_masks: dict, stable_mask: np.ndarray, p: dict, static: dict | None = None):
-    """Run the alert rule. Returns (per_epoch_rows, episodes, velocity array)."""
-    vel = rolling_velocity(stack, p["window_days"], p["min_obs_in_window"])
+def detect(stack, wall_masks: dict, stable_mask: np.ndarray, p: dict, static: dict | None = None, vel=None):
+    """Run the alert rule. Returns (per_epoch_rows, episodes, velocity array).
+
+    vel: optional precomputed rolling velocity (same window settings), so several
+    thresholds can be evaluated on one realization without recomputing it.
+    """
+    if vel is None:
+        vel = rolling_velocity(stack, p["window_days"], p["min_obs_in_window"])
     geom_ok = None
     if static is not None and static.get("layover_shadow_mask") is not None:
         geom_ok = static["layover_shadow_mask"] == 0

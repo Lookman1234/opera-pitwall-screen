@@ -156,6 +156,21 @@ def test_unlocated_event_is_not_counted():
         assert c["n_unlocated"] == 1 and c["n_events_observable"] == 2 and c["n_not_observable"] == 2, c
 
 
+def test_stratified_correction_removes_depth_signal():
+    from pitwall import synthetic as syn
+    dates, D, coh = syn.scene(7, amp=0.02, precursor_days=120, sigma_atm=0.0, seasonal=4.8e-5, sigma_px=0.0005)
+    walls, stable, layover, depth, patch = syn.masks()
+    s = stk.rebase(syn.granules(dates, D, coh), 0.0, False)
+    b = stk.correct_stratified(s, -depth)
+    stk.reference_to_stable(s, stable, 20)
+    floor = depth > 500
+    resid = np.array([np.median(s.disp[t][floor & ~patch]) for t in range(len(dates))])
+    assert np.nanmax(np.abs(resid)) < 0.002, np.nanmax(np.abs(resid))      # 2.9 cm seasonal swing removed
+    got = np.array([s.disp[t][patch].mean() for t in range(len(dates))])
+    creep_true = syn.creep(np.array([(d - dates[0]).days for d in dates], float), 440, 560, 0.02)
+    assert np.nanmax(np.abs(got - creep_true)[:46]) < 0.003
+
+
 def test_wilson():
     lo, hi = validate.wilson_ci(1, 2)
     assert 0.09 < lo < 0.10 and 0.90 < hi < 0.91, (lo, hi)

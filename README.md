@@ -17,6 +17,10 @@ code/02_stack.py             rebase granules, apply quality masks, stable-ground
 code/03_detect_validate.py   alerts, wall visibility, event outcomes, paper/stats.json
 code/04_figures.py           coverage maps and wall timelines
 code/05_manuscript.js        the preprint (paper/manuscript.docx), every number read from paper/stats.json
+code/06_synthetic_study.py   simulation study (2,560 synthetic pits) for the preprint
+code/07_geometry.py          LOS sensitivity, layover/shadow and aliasing limits (pure geometry)
+code/08_paper_figures.py     preprint figures; code/09_preprint_numbers.py: every number in the preprint
+paper/preprint/              LaTeX preprint (REVTeX 4.2 bundled); build.sh makes main.pdf
 code/00_events_from_msha.py  optional: candidate events from MSHA accident records
 code/pitwall/                the library the scripts use
 config/                      sites.yaml, params.yaml (all thresholds), events.csv, wall GeoJSON
@@ -42,6 +46,9 @@ python code/02_stack.py
 python code/03_detect_validate.py
 python code/04_figures.py
 npm install && node code/05_manuscript.js
+# preprint: simulation (about 20 min on 2 cores), geometry, figures, numbers, PDF
+python code/06_synthetic_study.py --seeds 40 && python code/07_geometry.py
+python code/08_paper_figures.py && python code/09_preprint_numbers.py && paper/preprint/build.sh
 ```
 
 ## Sources

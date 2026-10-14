@@ -104,6 +104,38 @@ def rebase(granules: list[dict], coherence_min: float, use_recommended_mask: boo
     )
 
 
+def correct_stratified(stack: Stack, elevation: np.ndarray, min_pixels: int = 200, clip: float = 3.0,
+                       iterations: int = 3) -> np.ndarray:
+    """Remove the part of each date's displacement that varies linearly with elevation.
+
+    Radar delay through a layered atmosphere changes with height, and in a pit the floor
+    sits hundreds of metres below the rim, so seasonal changes in that delay mimic wall
+    motion. For each date, fit d = a + b z over all valid pixels with iterative
+    sigma-clipping (clip x 1.4826 MAD), then subtract b z. Localised deformation is a small
+    fraction of the scene and is rejected by the clipping. Returns b per date (m per m).
+    Dates with fewer than min_pixels valid pixels are left unchanged (b = NaN).
+    """
+    z = np.asarray(elevation, dtype=float)
+    slopes = np.full(len(stack.dates), np.nan)
+    for t in range(len(stack.dates)):
+        sel = stack.valid[t] & np.isfinite(z) & np.isfinite(stack.disp[t])
+        if sel.sum() < min_pixels:
+            continue
+        zz, dd = z[sel], stack.disp[t][sel].astype(float)
+        keep = np.ones(zz.size, bool)
+        for _ in range(iterations):
+            A = np.column_stack([np.ones(keep.sum()), zz[keep]])
+            coef, *_ = np.linalg.lstsq(A, dd[keep], rcond=None)
+            res = dd - (coef[0] + coef[1] * zz)
+            mad = 1.4826 * np.median(np.abs(res[keep] - np.median(res[keep])))
+            if not np.isfinite(mad) or mad == 0:
+                break
+            keep = np.abs(res) <= clip * mad
+        slopes[t] = coef[1]
+        stack.disp[t] = stack.disp[t] - np.float32(coef[1]) * np.where(np.isfinite(z), z, 0).astype(np.float32)
+    return slopes
+
+
 def reference_to_stable(stack: Stack, stable_mask: np.ndarray, min_pixels: int = 20) -> np.ndarray:
     """Subtract the per-epoch median of valid stable-area pixels. Returns the per-epoch offset.
 

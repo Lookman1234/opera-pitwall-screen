@@ -9,6 +9,9 @@ coherence_min: 0.6              # DECISION. Lower keeps more wall pixels but noi
 use_recommended_mask: true      # DECISION. OPERA's own "trust this pixel" mask. May hide fast-moving walls.
 coherent_epoch_frac: 0.5        # a pixel counts as "coherent" if valid on at least half the dates
 stable_min_pixels: 20           # fewer valid stable-ground pixels than this -> that date is dropped
+stratified_correction: false    # DECISION. Remove, date by date, the part of the signal that varies linearly with
+                                # elevation (layered-atmosphere delay). The simulation study shows it removes most
+                                # depth-related false alerts; the pilot reports results both off and on.
 
 # Velocity
 window_days: 72                 # trailing window for each velocity estimate (about 6 Sentinel-1 revisits)

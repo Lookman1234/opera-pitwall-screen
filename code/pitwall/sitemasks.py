@@ -76,3 +76,15 @@ def refine_stable(stack, candidates, keep_frac=0.5):
     out = np.zeros_like(candidates)
     out[np.nonzero(candidates)] = keep
     return out
+
+
+def elevation(root, site, x, y):
+    """DEM heights on the stack grid from step 1b's file, or None if step 1b has not run."""
+    from .dem import regrid_values
+    p = auto_path(root, site)
+    if not os.path.exists(p):
+        return None
+    z = np.load(p, allow_pickle=False)
+    if "dem" not in z:
+        return None
+    return regrid_values(z["dem"], z["x"], z["y"], x, y)

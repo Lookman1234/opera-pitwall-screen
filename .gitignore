@@ -10,3 +10,10 @@ node_modules/
 paper/manuscript.docx
 paper/figures/
 paper/stats.json
+paper/preprint/*.aux
+paper/preprint/*.log
+paper/preprint/*.bbl
+paper/preprint/*.blg
+paper/preprint/*.out
+paper/preprint/*Notes.bib
+paper/preprint/main.txt
