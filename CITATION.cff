@@ -8,6 +8,10 @@ authors:
   - family-names: "Alabede"
     given-names: "Lukman"
     orcid: "https://orcid.org/0009-0008-7769-7455"
+    affiliation: "Independent Researcher"
+  - family-names: "Komolafe"
+    given-names: "Kayode"
+    affiliation: "Mining Engineering Department, Colorado School of Mines"
 license: MIT
 repository-code: "https://github.com/Lookman1234/opera-pitwall-screen"
 keywords:

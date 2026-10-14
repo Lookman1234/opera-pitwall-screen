@@ -17,6 +17,17 @@
         "Writing - original draft"
       ],
       "corresponding": true
+    },
+    {
+      "name": "Kayode Komolafe",
+      "family": "Komolafe",
+      "given": "Kayode",
+      "orcid": "",
+      "email": "komolafe@mines.edu",
+      "affiliation": "Mining Engineering Department, Colorado School of Mines, Golden, Colorado, USA",
+      "roles": [],
+      "corresponding": false,
+      "_note": "ORCID and CRediT roles to be confirmed by the co-author"
     }
   ],
   "collaborators": []
