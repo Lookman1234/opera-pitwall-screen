@@ -11,6 +11,7 @@ authors:
     affiliation: "Independent Researcher"
   - family-names: "Komolafe"
     given-names: "Kayode"
+    orcid: "https://orcid.org/0000-0001-8279-821X"
     affiliation: "Mining Engineering Department, Colorado School of Mines"
 license: MIT
 repository-code: "https://github.com/Lookman1234/opera-pitwall-screen"
