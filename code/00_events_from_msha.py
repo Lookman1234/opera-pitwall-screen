@@ -11,7 +11,7 @@ the location, and copy the ones you accept into config/events.csv.
 Input: Accidents.zip from https://arlweb.msha.gov/OpenGovernmentData/OGIMSHA.asp
 (download it in a browser and put it in data/raw/msha/). Mine IDs come from
 msha_mine_id in config/sites.yaml.
-[VERIFY the column names below against the Accidents definition file]
+(first-real-run check: the column names below against the Accidents definition file; see docs/VERIFY_CHECKLIST.md Part 3)
 """
 
 from __future__ import annotations

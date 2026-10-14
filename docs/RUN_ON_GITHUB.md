@@ -2,7 +2,7 @@
 
 *Plain-language header: GitHub's computers download the NASA data with your free login and run the pipeline. You press one button. Nothing is installed on your computer.*
 
-You need: a GitHub account, a NASA Earthdata account (https://urs.earthdata.nasa.gov/users/new), and this project uploaded to GitHub (I do the upload once you give me a token, or follow the steps in PUBLISH_GUIDE.md).
+You need: a GitHub account, a NASA Earthdata account (https://urs.earthdata.nasa.gov/users/new), and this project uploaded to GitHub (see docs/PUBLISH_GUIDE.md).
 
 ## 1. Store your NASA login as secrets (5 min)
 

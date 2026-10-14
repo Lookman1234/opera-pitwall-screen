@@ -69,7 +69,7 @@ def wall_coverage(stack, wall_masks: dict, static: dict | None, walls_props: dic
             out[wid] = rec | {"usable_frac": 0.0}
             continue
         if static is not None and static.get("layover_shadow_mask") is not None:
-            # [VERIFY layover_shadow_mask convention: assumed nonzero = layover or shadow]
+            # (first-real-run check: layover_shadow_mask convention: assumed nonzero = layover or shadow; see docs/VERIFY_CHECKLIST.md Part 3)
             geom_ok = static["layover_shadow_mask"] == 0
         else:
             geom_ok = np.ones_like(m)

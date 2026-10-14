@@ -13,11 +13,11 @@ sites:
     name: "Continental Pit, Butte, Montana"
     operator: "Montana Resources"
     state: MT
-    msha_mine_id: ""            # [VERIFY MSHA mine ID if MSHA records are used]
+    msha_mine_id: ""            # (first-real-run check: MSHA mine ID if MSHA records are used; see docs/VERIFY_CHECKLIST.md Part 3)
     # Pit centre 46.0106 N, 112.4800 W (mindat loc-107252); box about 7 km x 7 km
     bbox: [-112.525, 45.980, -112.435, 46.040]
     frame_ids: []
-    pit_center: [-112.4800, 46.0106]   # lon, lat (mindat loc-107252) [VERIFY on the auto-walls preview]
+    pit_center: [-112.4800, 46.0106]   # lon, lat (mindat loc-107252) (first-real-run check: on the auto-walls preview; see docs/VERIFY_CHECKLIST.md Part 3)
     pit_radius_m: 1300                 # keeps the flooded Berkeley Pit (about 2.5 km west) out
     wall_aliases: {D_East: faces_W_E}  # the D East highwall = east side of the pit, facing west
     walls: config/sites/continental_walls.geojson   # optional hand-drawn override; else automatic
@@ -30,11 +30,11 @@ sites:
     state: NV
     msha_mine_id: ""
     # Mine centroid 39.9419 N, 115.5422 W (Wikipedia). The district spans many pits, so this
-    # box is wide (about 14 km x 13 km). [VERIFY Saga Pit location, then shrink the box]
+    # box is wide (about 14 km x 13 km). (first-real-run check: Saga Pit location, then shrink the box; see docs/VERIFY_CHECKLIST.md Part 3)
     bbox: [-115.622, 39.882, -115.462, 40.002]
     frame_ids: []
     pit_center: null                   # unknown, so step 1b runs in district mode: every pit in the box is found
-                                       # and numbered on the preview map. [VERIFY which pit is Saga], then set
+                                       # and numbered on the preview map. (first-real-run check: which pit is Saga; see docs/VERIFY_CHECKLIST.md Part 3), then set
                                        # pit_center to it, or set wall_aliases to Saga_N: pit<k>_faces_S_N
     pit_radius_m: 800
     wall_aliases: {Saga_N: faces_S_N}  # the Saga north wall = north side of the pit, facing south

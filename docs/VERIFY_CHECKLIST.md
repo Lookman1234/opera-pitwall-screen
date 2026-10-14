@@ -50,3 +50,10 @@ Each is set in `config/params.yaml`. Reply with your choice, or "defaults".
 - [ ] Evidence log row written on release day. ___
 
 **When every box is ticked, reply in your own words that you have checked the package and approve publishing.**
+
+---
+
+## Approval record
+
+- **2026-10-13, v0.1.0 (software release):** Lukman Alabede confirmed in his own words that he had read and verified the package, and approved publishing. This covers the method, the code, the synthetic tests, the documentation and the default decisions in Part 4. It does not cover real-data results, which did not exist at the time.
+- **Next approval needed:** after the first real-data run, Parts 3 and 3a and the manuscript need a second verification before any results, the preprint, or a results release go out.

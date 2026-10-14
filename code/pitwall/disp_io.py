@@ -9,7 +9,7 @@ Technical notes
   build time. They are collected in LAYERS/STATIC_LAYERS so one edit fixes them.
   Run `python code/02_stack.py --inspect <file.nc>` on the first real granule and
   compare the printed tree with these names before trusting any output.
-  [VERIFY layer names against the first real granule and the product spec]
+  (first-real-run check: layer names against the first real granule and the product spec; see docs/VERIFY_CHECKLIST.md Part 3)
 * Each lookup tries several candidate paths, then falls back to searching the
   file for a dataset with the same leaf name, so group moves do not break reads.
 * Only the pixels inside the site bounding box are read (h5py slicing), so full

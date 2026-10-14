@@ -7,3 +7,6 @@ __pycache__/
 .netrc
 config/exclude.local.yaml
 node_modules/
+paper/manuscript.docx
+paper/figures/
+paper/stats.json

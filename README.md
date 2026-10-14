@@ -1,6 +1,6 @@
 # OPERA Pit-Wall Screen
 
-**Status:** DRAFT v0.1 (pipeline built and tested on synthetic data; no real-data results yet) | **Maintainer:** Lukman Alabede (Independent Researcher), ORCID [0009-0008-7769-7455](https://orcid.org/0009-0008-7769-7455) | **License:** code MIT, results CC BY 4.0
+**Status:** v0.1.0 software release, 2026-10-13 (pipeline verified by the author and tested on synthetic data; no real-data results yet) | **Maintainer:** Lukman Alabede (Independent Researcher), ORCID [0009-0008-7769-7455](https://orcid.org/0009-0008-7769-7455) | **License:** code MIT, results CC BY 4.0
 
 **In plain terms:** NASA now publishes free satellite maps of ground movement across the United States every 6 to 12 days, back to 2016. This project tests whether those free maps can spot open-pit mine walls starting to move before they fail, and shows exactly which walls the satellite cannot see. Anyone can rerun it on any pit.
 
@@ -52,11 +52,11 @@ npm install && node code/05_manuscript.js
 | OPERA L3 DISP-S1-STATIC v1, https://www.earthdata.nasa.gov/data/catalog/asf-opera-l3-disp-s1-static-v1-1 | per frame | NASA open data | see PROVENANCE.txt |
 | Copernicus DEM GLO-30 (AWS Open Data, https://registry.opendata.aws/copernicus-dem/) for automatic wall outlines | acquired about 2011-2015 | free use with attribution (Copernicus DEM licence) | see PROVENANCE.txt |
 | Wall outlines override (PitGeom or author-drawn), optional | | CC BY 4.0 | |
-| Failure events (GroundFall-US or reviewed MSHA records, https://arlweb.msha.gov/OpenGovernmentData/OGIMSHA.asp) | [pending] | US public domain | |
+| Failure events: Montana DEQ inspection report (2022) and NIOSH-linked study (2024), listed in config/events.csv; later GroundFall-US or reviewed MSHA records | 2022-2024 | public records | 2026-10-11 |
 
 ## Headline numbers
 
-None yet. Real-data results will be written here from `paper/stats.json` after verification.
+None yet. This release is the method and software. Real-data results will be written here from `paper/stats.json` after the first real-data run and a second author verification.
 
 ## Limitations
 
@@ -64,4 +64,4 @@ See [docs/LIMITATIONS.md](docs/LIMITATIONS.md) before using or citing anything h
 
 ## Citation
 
-See `CITATION.cff`. DOI: [DOI pending first release]
+See `CITATION.cff`. A Zenodo DOI is minted when this release is archived and will be added here.

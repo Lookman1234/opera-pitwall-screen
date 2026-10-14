@@ -83,7 +83,7 @@ def rebase(granules: list[dict], coherence_min: float, use_recommended_mask: boo
         if use_recommended_mask and g.get("recommended_mask") is not None:
             ok &= np.asarray(g["recommended_mask"]) == 1
         if g.get("water_mask") is not None:
-            # [VERIFY water_mask convention: assumed 1 = land, 0 = water]
+            # (first-real-run check: water_mask convention: assumed 1 = land, 0 = water; see docs/VERIFY_CHECKLIST.md Part 3)
             ok &= np.asarray(g["water_mask"]) != 0
         known[g["secondary_date"]] = (cum, s)
         dates.append(g["secondary_date"])

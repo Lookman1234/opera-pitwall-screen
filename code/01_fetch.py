@@ -11,7 +11,7 @@ pressing "Run workflow" on GitHub, not by hand.
 Tools: opera-utils (`opera-utils disp-s1-download`, flags --bbox --frame-id
 --output-dir --end-datetime --num-workers, per its README) for the time series,
 asf_search for DISP-S1-STATIC.
-[VERIFY collection short names and the STATIC frame file-name pattern on the first run]
+(first-real-run check: collection short names and the STATIC frame file-name pattern on the first run; see docs/VERIFY_CHECKLIST.md Part 3)
 """
 
 from __future__ import annotations

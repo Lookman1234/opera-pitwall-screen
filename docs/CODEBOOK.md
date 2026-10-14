@@ -42,7 +42,7 @@ Same columns, one row per event per track.
 | usable_frac | Both of the above |
 | median_coherence | Median temporal coherence over all dates and wall pixels |
 | los_sensitivity | Mean abs(downslope unit vector . LOS unit vector); needs aspect_deg and slope_deg |
-| expected_los_sign | Sign a downslope slide should show (+1 toward satellite) [VERIFY OPERA sign convention] |
+| expected_los_sign | Sign a downslope slide should show (+1 toward satellite) (first-real-run check: OPERA sign convention; see docs/VERIFY_CHECKLIST.md Part 3) |
 
 ## data/processed/<site>/F<frame>_epochs.csv (one row per wall per date)
 

@@ -3,14 +3,13 @@ message: "If you use this work, please cite it as below."
 type: software
 title: "OPERA Pit-Wall Screen: testing NASA OPERA DISP-S1 InSAR for open-pit wall movement"
 version: "0.1.0"
-date-released: "[date of first release]"
+date-released: "2026-10-13"
 authors:
   - family-names: "Alabede"
     given-names: "Lukman"
     orcid: "https://orcid.org/0009-0008-7769-7455"
 license: MIT
-repository-code: "https://github.com/[ASK github user]/opera-pitwall-screen"
-doi: "[DOI pending first release]"
+repository-code: "https://github.com/Lookman1234/opera-pitwall-screen"
 keywords:
   - InSAR
   - OPERA DISP-S1
